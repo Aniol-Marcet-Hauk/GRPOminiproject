@@ -1,10 +1,11 @@
 # GRPO Project
 
-GRPO training on math tasks using a small causal language model. Based on the original deepseek paper. 
+GRPO training on math tasks using a small causal language model. 
+Based on the original deepseek paper. 
  
 ## Files
 
-- `GRPO.py`: trainer + reward models, this is the main file
+- `GRPO.py`: trainer and reward models, this is the main file
     - rewardmodelv1 is a very simple reward model,
     - rewardmodelv2 is the one I was using on my computer as I have a 4GB gpu so I needed smaller rewards
     - rewardmodelv3 is the model that should be used for standard grpo
@@ -63,32 +64,18 @@ python train.py --help
 ```bash
 python -u train.py --simple-dataset --simple-size 120 --max-steps 20 --eval-every 5
 ```
-This will probably give you zero rewards unless you choose a better model and fix the system prompt.
-### Stable low-memory profile
+This will probably give you zero rewards unless you choose a better model and make a better system prompt.
+
+### Stable low-memory test
 
 ```bash
 python -u train.py --simple-dataset --simple-size 300 --max-steps 200 --eval-every 20 --eval-sample-size 4 --eval-num-return-seq 1 --eval-max-new-tokens 16 --train-num-return-seq 2 --train-max-new-tokens 16 --train-epochs 1 --accumulation-steps 8
 ```
 
-### Higher-signal profile (more expensive)
-
-```bash
-python -u train.py --simple-dataset --simple-size 500 --max-steps 400 --eval-every 25 --eval-sample-size 6 --eval-num-return-seq 2 --eval-max-new-tokens 24 --train-num-return-seq 4 --train-max-new-tokens 24 --train-epochs 1 --accumulation-steps 8
-```
-
-## Notes and Troubleshooting
-
-- If you see no output after `Using device: ...`, check `--eval-every` versus dataset size:
-  - only eval logs are printed by default.
-  - if eval interval is larger than actual train steps, no eval lines appear.
-- If rewards are all zero, increase generation length and/or eval sample size.
-- If CUDA crashes, restart the Python process before rerunning.
-- `--simple-dataset` uses generated multi-step arithmetic tasks that are harder than basic one-step math.
-
 ## Output Files
 
 - `train_test_reward_curve.png`: train/test reward curve
-- `grpo_step_<N>/`: periodic checkpoints
+- `grpo_step_/`: periodic checkpoints
 
 ## Tests
 
