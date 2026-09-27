@@ -23,25 +23,16 @@ def parse_args():
     parser.add_argument("--max-steps", type=int, default=50, help="Maximum training steps")
     parser.add_argument("--eval-every", type=int, default=2, help="Evaluate every N steps")
     parser.add_argument("--eval-sample-size", type=int, default=8, help="Examples per split for each evaluation")
-    parser.add_argument("--eval-num-return-seq", type=int, default=1,
-        help="Number of generated samples per prompt during evaluation")
-    parser.add_argument("--eval-max-new-tokens", type=int, default=32,
-        help="Max generated tokens per prompt during evaluation")
-    parser.add_argument("--simple-dataset", action="store_true",
-        help="Use a built-in arithmetic toy dataset instead of downloading a HF dataset")
-    parser.add_argument("--simple-size", type=int, default=200,
-            help="Number of rows in the built-in arithmetic toy dataset")
-    parser.add_argument("--train-num-return-seq", type=int, default=1,
-        help="Number of generated samples per prompt during training")
-    parser.add_argument("--train-max-new-tokens", type=int, default=32,
-        help="Max generated tokens per prompt during training")
-    parser.add_argument("--train-epochs", type=int, default=1,
-        help="PPO update epochs per training step")
-    parser.add_argument("--accumulation-steps", type=int, default=8,
-        help="Gradient accumulation steps")
+    parser.add_argument("--eval-num-return-seq", type=int, default=1)
+    parser.add_argument("--eval-max-new-tokens", type=int, default=32)
+    parser.add_argument("--simple-dataset", action="store_true")
+    parser.add_argument("--simple-size", type=int, default=200)
+    parser.add_argument("--train-num-return-seq", type=int, default=1)
+    parser.add_argument("--train-max-new-tokens", type=int, default=32)
+    parser.add_argument("--train-epochs", type=int, default=1)
+    parser.add_argument("--accumulation-steps", type=int, default=8)
     parser.add_argument("--no-memory-saving", dest="memory_saving",
-        action="store_false", default=True,
-        help="Disable memory-saving mode (faster, but higher VRAM use, no gradient checkpointing + cache on)")
+        action="store_false", default=True)
     return parser.parse_args()
 
 
@@ -50,8 +41,7 @@ def get_problem_and_answer(row):
         return row["problem"], str(row["answer"])
     if "question" in row and "final_answer" in row:
         return row["question"], str(row["final_answer"])
-    raise KeyError(
-        "Unsupported dataset schema. Expected either (problem, answer) or (question, final_answer).")
+    raise KeyError("Unsupported dataset schema. Expected either (problem, answer) or (question, final_answer).")
 
 
 def evaluate_average_reward( trainer, data_split, sample_size=64, seed=0,
@@ -69,15 +59,11 @@ def evaluate_average_reward( trainer, data_split, sample_size=64, seed=0,
             encoded_input = {k: v.to(model_device) for k, v in encoded_input.items()}
             prompt_len = encoded_input["input_ids"].shape[1]
 
-            outputs = trainer.active_pol.generate(
-                **encoded_input,
-                max_new_tokens=eval_max_new_tokens,
-                do_sample=True,
-                temperature=trainer.temperature,
-                num_return_sequences=eval_num_return_seq)
+            outputs = trainer.active_pol.generate( **encoded_input, max_new_tokens=eval_max_new_tokens,
+                                                  do_sample=True, temperature=trainer.temperature, 
+                                                  num_return_sequences=eval_num_return_seq)
 
-            reward_tensor = trainer.reward_model.calculate_reward(
-                outputs[:, prompt_len - 1 :], answer_text)
+            reward_tensor = trainer.reward_model.calculate_reward(outputs[:, prompt_len - 1 :], answer_text)
             rewards.append(float(reward_tensor.mean().item()))
 
             del outputs, encoded_input
@@ -110,7 +96,7 @@ def unpack_train_result(train_result):
 
 
 def run_training_loop( trainer, train_dataset, test_dataset, eval_every=100,
-                    max_steps=1000, eval_sample_size=64, eval_num_return_seq=1, eval_max_new_tokens=32,):
+                    max_steps=1000, eval_sample_size=64, eval_num_return_seq=1, eval_max_new_tokens=32):
     eval_steps = []
     train_rewards = []
     test_rewards = []
