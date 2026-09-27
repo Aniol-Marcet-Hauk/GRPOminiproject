@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+train_test_reward_curve.png
+grpo_step_*/
+
+
+.env
+.vscode/
+
+run_gpu.sh
